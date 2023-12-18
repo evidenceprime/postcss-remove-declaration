@@ -1,0 +1,61 @@
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  contents: read
+  packages: write
+  statuses: write
+
+jobs:
+  buildAndPush:
+    name: Build and push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+          registry-url: https://npm.pkg.github.com
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run lint
+        run: yarn lint
+      - name: Run tests
+        run: yarn test:ci
+      - name: Build
+        run: yarn build
+      - name: Release
+        if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+        run: yarn release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Record test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Unit Tests
+          path: test-results/*.xml
+          reporter: jest-junit
+      - name: Notify Google Chat
+        uses: evidenceprime/google-chat-notifications@master
+        if: ${{ github.event_name == 'push' }}
+        with:
+          title: "PostCSS Remove declaration plugin"
+          subtitle: ${{ github.event.head_commit.message }}
+          webhookUrl: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          threadKey: kJOQAWTHYJg
+          status: ${{ job.status }}
