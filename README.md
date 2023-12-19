@@ -7,13 +7,13 @@
 ### Via NPM
 
 ```bash
-$ npm install postcss-remove-declaration --save-dev
+$ npm install @evidenceprime/postcss-remove-declaration --save-dev
 ```
 
 ### Via Yarn
 
 ```bash
-$ yarn add postcss-remove-declaration --dev
+$ yarn add @evidenceprime/postcss-remove-declaration --dev
 ```
 
 ## 🚀 Usage
@@ -23,7 +23,7 @@ Once you have done the installation, you will need to configure plugin by creati
 ```javascript
 module.exports = {
   plugins: [
-    require("postcss-remove-declaration")({
+    require("@evidenceprime/postcss-remove-declaration")({
       remove: {
         ".a": "*",
         ".b": "color",
