@@ -21,13 +21,13 @@ export type PostCssRemoveDeclarationOptions = {
 export const PostCssRemoveDeclarationPlugin: PluginCreator<PostCssRemoveDeclarationOptions> = (
   options?: PostCssRemoveDeclarationOptions
 ): Plugin => {
-  const { remove } = options || { remove: {} };
+  const { remove: selectorsToRemove } = options || { remove: {} };
 
   return {
     postcssPlugin: 'postcss-remove-declaration',
     prepare: (css: Result) => {
       css.root.walkRules((rule: Rule) => {
-        const toRemoveForRule = remove[removeLineBreaks(rule.selector)];
+        const toRemoveForRule = selectorsToRemove[removeLineBreaks(rule.selector)];
         if (!toRemoveForRule) {
           return;
         }
@@ -52,7 +52,7 @@ export const PostCssRemoveDeclarationPlugin: PluginCreator<PostCssRemoveDeclarat
         } else if (typeof toRemoveForRuleArrayOrObject === 'object') {
           rule.walkDecls((declaration: Declaration) => {
             if (declaration.prop in toRemoveForRuleArrayOrObject) {
-              let value: string = (toRemoveForRuleArrayOrObject as PostCssRemoveObjectType)[
+              let value = (toRemoveForRuleArrayOrObject as PostCssRemoveObjectType)[
                 declaration.prop
               ];
               const hasImportant = value.endsWith(IMPORTANT);
