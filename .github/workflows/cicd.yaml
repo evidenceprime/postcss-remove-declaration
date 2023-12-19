@@ -40,7 +40,7 @@ jobs:
         run: yarn build
       - name: Release
         if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
-        run: yarn release
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Record test results
@@ -52,7 +52,7 @@ jobs:
           reporter: jest-junit
       - name: Notify Google Chat
         uses: evidenceprime/google-chat-notifications@master
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ always() && github.event_name == 'push' }}
         with:
           title: "PostCSS Remove declaration plugin"
           subtitle: ${{ github.event.head_commit.message }}

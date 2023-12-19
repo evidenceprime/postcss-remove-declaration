@@ -23,7 +23,6 @@
     "lint": "eslint *.ts test/*.ts",
     "prebuild": "rm -rf index.js index.d.ts",
     "prettier": "prettier *.ts test/*.ts --write",
-    "publish": "yarn build && npm publish",
     "test": "jest",
     "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
     "test:watch": "jest --watch"
