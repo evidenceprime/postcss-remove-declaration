@@ -13,19 +13,34 @@ export type PostCssRemoveObjectType = {
 export type PostCssRemoveArrayOrObjectType = string[] | PostCssRemoveObjectType;
 
 export type PostCssRemoveDeclarationOptions = {
-  remove: {
+  remove?: {
     [selector: string]: string | PostCssRemoveArrayOrObjectType;
   };
+  transformLayersToNormalStyles?: boolean | string[];
 };
 
 export const PostCssRemoveDeclarationPlugin: PluginCreator<PostCssRemoveDeclarationOptions> = (
   options?: PostCssRemoveDeclarationOptions
 ): Plugin => {
-  const { remove: selectorsToRemove } = options || { remove: {} };
+  const { remove: selectorsToRemove = {}, transformLayersToNormalStyles = false } = options || {};
+  const transformLayersToNormalStylesTrimmed: PostCssRemoveDeclarationOptions['transformLayersToNormalStyles'] =
+    Array.isArray(transformLayersToNormalStyles)
+      ? transformLayersToNormalStyles.map((layer) => layer.trim())
+      : transformLayersToNormalStyles;
 
   return {
     postcssPlugin: 'postcss-remove-declaration',
     prepare: (css: Result) => {
+      css.root.walkAtRules('layer', (atRule) => {
+        if (
+          (Array.isArray(transformLayersToNormalStylesTrimmed) &&
+            transformLayersToNormalStylesTrimmed.includes(atRule.params.trim())) ||
+          transformLayersToNormalStylesTrimmed === true
+        ) {
+          atRule.before(atRule.nodes);
+          atRule.remove();
+        }
+      });
       css.root.walkRules((rule: Rule) => {
         const toRemoveForRule = selectorsToRemove[removeLineBreaks(rule.selector)];
         if (!toRemoveForRule) {
