@@ -44,4 +44,30 @@ describe('PostCssRemoveDeclarationPlugin', () => {
     const p = await postcss(plugins).process(css, { from: undefined });
     expect(p.css).toMatchInlineSnapshot(`".a { font-size: 14px; } .b { color: red }"`);
   });
+
+  it('should correctly transform layers to normal styles', async () => {
+    const css = '@layer test { .a { color: red; font-size: 14px; } .b { color: red } }';
+    const expectedCss = `" .a { color: red; font-size: 14px; } .b { color: red }"`;
+    const plugins = [
+      PostCssRemoveDeclarationPlugin({
+        remove: {},
+        transformLayersToNormalStyles: true,
+      }),
+    ];
+    const p = await postcss(plugins).process(css, { from: undefined });
+    expect(p.css).toMatchInlineSnapshot(expectedCss);
+  });
+
+  it('should correctly transform only passed layers to normal styles', async () => {
+    const css = '@layer test { .a { color: red; font-size: 14px; } } @layer troll { .b { color: red } }';
+    const expectedCss = `" .a { color: red; font-size: 14px; } @layer troll { .b { color: red } }"`;
+    const plugins = [
+      PostCssRemoveDeclarationPlugin({
+        remove: {},
+        transformLayersToNormalStyles: ['test'],
+      }),
+    ];
+    const p = await postcss(plugins).process(css, { from: undefined });
+    expect(p.css).toMatchInlineSnapshot(expectedCss);
+  });
 });
